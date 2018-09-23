@@ -1,6 +1,6 @@
-FROM hashicorp/terraform:0.11.8
+FROM golang:alpine
 RUN apk update && \
-    apk add python3 docker bash && \
+    apk add python3 docker git opensh bash && \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
     pip3 install --upgrade pip setuptools && \
