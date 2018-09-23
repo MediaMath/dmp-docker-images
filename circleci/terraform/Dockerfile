@@ -9,5 +9,7 @@ ENV SCRIPT_HOME "/opt/circleci/scripts"
 ENV ENTRYPOINT "${SCRIPT_HOME}/deploy.sh"
 
 RUN mkdir -p $SCRIPT_HOME
+COPY ./scripts $SCRIPT_HOME
+RUN chmod 555 $SCRIPT_HOME/*.sh
 
 ENTRYPOINT ["/bin/bash", "${ENTRYPOINT}"]
