@@ -6,7 +6,7 @@ ENV TF_DEV=true
 ENV TF_RELEASE=true
 
 RUN apk update && \
-    apk add python3 docker git opensh bash && \
+    apk add python3 docker git openssh bash && \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
     pip3 install --upgrade pip setuptools && \
