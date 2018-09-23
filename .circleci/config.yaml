@@ -1,0 +1,91 @@
+version: 2
+_variables:
+  global_variables: &global_variables
+    AWS_ECR: 298843886518.dkr.ecr.us-east-1.amazonaws.com
+    WORKSPACE_PATH: /tmp/workspace
+    BASHRC_FILE: .bashrc
+_stored_procedures:
+  setup_git: &setup_git
+    run:
+      name: setup git
+      command: |
+        git push --set-upstream origin ${CIRCLE_BRANCH}
+        git config --global user.email "circleci@mediamath.com"
+        git config --global user.name "CircleCI"
+        git fetch --tags
+  increment_version: &increment_version
+    run:
+      name: version increment and git tag
+      command: |
+        chmod +x ./scripts/git_increment_and_tag.sh
+        mkdir -p ${WORKSPACE_PATH}
+        image_version=`./scripts/git_increment_and_tag.sh -p`
+        echo "export image_version=${image_version}" >> ${WORKSPACE_PATH}/${BASHRC_FILE}
+  install_dependencies: &install_dependencies
+    run:
+      name: Install dependencies
+      command: |
+        apk add --no-cache py-pip
+        apk add --no-cache bash
+        pip install \
+          docker-compose==1.22.0 \
+          awscli==1.16.18
+  load_docker_cache: &load_docker_cache
+    run:
+      name: Load Docker image layer cache
+      command: |
+        set +o pipefail
+        docker load -i /caches/app.tar | true
+  build_application_docker_image: &build_application_docker_image
+    run:
+      name: Build application Docker image
+      command: |
+        docker build --cache-from=app -t terraform ./circleci/terraform
+  save_docker_image: &save_docker_image
+    run:
+      name: Save Docker image layer cache
+      command: |
+        mkdir -p /caches
+        docker save -o /caches/app.tar terraform
+jobs:
+  build:
+    working_directory: /app
+    docker:
+      - image: docker:17.05.0-ce-git
+    environment:
+      <<: *global_variables
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "ee:9c:de:91:29:48:c7:32:04:bc:54:8f:19:1d:90:ba"
+      - checkout
+      - setup_remote_docker
+      - *install_dependencies
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - /caches/app.tar
+      - *load_docker_cache
+      - *build_application_docker_image
+      - *save_docker_image
+      - save_cache:
+          key: v1-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /caches/app.tar
+      - *setup_git
+      - *increment_version
+      - deploy:
+          name: Push application Docker image
+          command: |
+            eval $(aws ecr get-login --no-include-email --region us-east-1)
+            source ${WORKSPACE_PATH}/${BASHRC_FILE}
+            docker tag terraform "${AWS_ECR}/terraform:${image_version}"
+            docker push "${AWS_ECR}/terraform:${image_version}"
+workflows:
+  version: 2
+  docker-pipeline:
+    jobs:
+      - build:
+          context: mediamath
+
