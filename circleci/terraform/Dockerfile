@@ -1,10 +1,10 @@
 FROM hashicorp/terraform:0.11.8
 RUN apk update && \
-    apk add python3 docker && \
+    apk add python3 docker bash && \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
-    pip3 install --upgrade pip setuptools
-
+    pip3 install --upgrade pip setuptools && \
+    pip3 install docker-compose==1.22.0 awscli==1.16.18
 ENV SCRIPT_HOME "/opt/circleci/scripts"
 ENV ENTRYPOINT "${SCRIPT_HOME}/deploy.sh"
 
