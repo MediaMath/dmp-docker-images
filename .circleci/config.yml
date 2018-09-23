@@ -17,9 +17,9 @@ _stored_procedures:
     run:
       name: version increment and git tag
       command: |
-        chmod +x ./scripts/git_increment_and_tag.sh
+        chmod +x ./circleci/terraform/scripts/git_increment_and_tag.sh
         mkdir -p ${WORKSPACE_PATH}
-        image_version=`./scripts/git_increment_and_tag.sh -p`
+        image_version=`./circleci/terraform/scripts/git_increment_and_tag.sh -p`
         echo "export image_version=${image_version}" >> ${WORKSPACE_PATH}/${BASHRC_FILE}
   install_dependencies: &install_dependencies
     run:
