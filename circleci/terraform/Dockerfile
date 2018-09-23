@@ -8,5 +8,6 @@ RUN apk update && \
 ENV SCRIPT_HOME "/opt/circleci/scripts"
 ENV ENTRYPOINT "${SCRIPT_HOME}/deploy.sh"
 
+RUN mkdir -p $SCRIPT_HOME
 
 ENTRYPOINT ["/bin/bash", "${ENTRYPOINT}"]
