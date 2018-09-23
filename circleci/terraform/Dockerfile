@@ -6,10 +6,7 @@ RUN apk update && \
     pip3 install --upgrade pip setuptools && \
     pip3 install docker-compose==1.22.0 awscli==1.16.18
 ENV SCRIPT_HOME "/opt/circleci/scripts"
-ENV ENTRYPOINT "${SCRIPT_HOME}/deploy.sh"
 
 RUN mkdir -p $SCRIPT_HOME
 COPY ./scripts $SCRIPT_HOME
 RUN chmod 555 $SCRIPT_HOME/*.sh
-
-ENTRYPOINT ["/bin/bash", "${ENTRYPOINT}"]
