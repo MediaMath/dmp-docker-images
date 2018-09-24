@@ -1,7 +1,7 @@
 FROM golang:alpine
 
 
-ENV TERRAFORM_VERSION=0.10.0
+ENV TERRAFORM_VERSION=0.11.8
 ENV TF_DEV=true
 ENV TF_RELEASE=true
 ENV SCRIPT_HOME "/opt/circleci/scripts"
