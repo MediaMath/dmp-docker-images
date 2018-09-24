@@ -10,7 +10,7 @@ RUN mkdir -p $SCRIPT_HOME
 COPY ./scripts $SCRIPT_HOME
 
 RUN apk update && \
-    apk add python3 docker git openssh bash && \
+    apk add python3 docker git openssh bash jq && \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
     pip3 install --upgrade pip setuptools && \
