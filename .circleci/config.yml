@@ -17,9 +17,9 @@ _stored_procedures:
     run:
       name: version increment and git tag
       command: |
-        chmod +x ./circleci/terraform/scripts/git_increment_and_tag.sh
+        chmod +x ./circleci/${IMAGE}/scripts/git_increment_and_tag.sh
         mkdir -p ${WORKSPACE_PATH}
-        image_version=`./circleci/terraform/scripts/git_increment_and_tag.sh -p`
+        image_version=`./circleci/${IMAGE}/scripts/git_increment_and_tag.sh -p`
         echo "export image_version=${image_version}" >> ${WORKSPACE_PATH}/${BASHRC_FILE}
   install_dependencies: &install_dependencies
     run:
@@ -40,20 +40,21 @@ _stored_procedures:
     run:
       name: Build application Docker image
       command: |
-        docker build --cache-from=app -t terraform ./circleci/terraform
+        docker build --cache-from=app -t ${IMAGE} ./circleci/${IMAGE}
   save_docker_image: &save_docker_image
     run:
       name: Save Docker image layer cache
       command: |
         mkdir -p /caches
-        docker save -o /caches/app.tar terraform
+        docker save -o /caches/app.tar ${IMAGE}
 jobs:
-  build:
+  build_terraform:
     working_directory: /app
     docker:
       - image: docker:17.05.0-ce-git
     environment:
       <<: *global_variables
+      IMAGE: terraform
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -80,11 +81,11 @@ jobs:
           command: |
             eval $(aws ecr get-login --no-include-email --region us-east-1)
             source ${WORKSPACE_PATH}/${BASHRC_FILE}
-            docker tag terraform "${AWS_ECR}/terraform:${image_version}"
-            docker push "${AWS_ECR}/terraform:${image_version}"
+            docker tag ${IMAGE} "${AWS_ECR}/${IMAGE}:${image_version}"
+            docker push "${AWS_ECR}/${IMAGE}:${image_version}"
 workflows:
   version: 2
   docker-pipeline:
     jobs:
-      - build:
+      - build_terraform:
           context: mediamath
