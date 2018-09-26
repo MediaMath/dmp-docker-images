@@ -114,7 +114,7 @@ jobs:
             - /caches/app.tar
       - *setup_git
       - *increment_version
-      - *deploy:
+      - *deploy
 
 workflows:
   version: 2
