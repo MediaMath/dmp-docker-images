@@ -70,6 +70,20 @@ _stored_procedures:
         key: v1-{{ .Branch }}-{{ epoch }}
         paths:
           - /caches/app.tar
+  build_image: &build_image
+    - *add_keys
+    - checkout
+    - setup_remote_docker
+    - *install_dependencies
+    - *restore
+    - *load_docker_cache
+    - *build_application_docker_image
+    - *save_docker_image
+    - *save
+    - *setup_git
+    - *increment_version
+    - *deploy
+
 jobs:
   build_terraform:
     working_directory: /app
@@ -79,18 +93,8 @@ jobs:
       <<: *global_variables
       IMAGE: terraform
     steps:
-      - *add_keys
-      - checkout
-      - setup_remote_docker
-      - *install_dependencies
-      - *restore
-      - *load_docker_cache
-      - *build_application_docker_image
-      - *save_docker_image
-      - *save
-      - *setup_git
-      - *increment_version
-      - *deploy
+      *build_image
+
   build_python:
     working_directory: /app
     docker:
@@ -99,18 +103,7 @@ jobs:
       <<: *global_variables
       IMAGE: python
     steps:
-      - *add_keys
-      - checkout
-      - setup_remote_docker
-      - *install_dependencies
-      - *restore
-      - *load_docker_cache
-      - *build_application_docker_image
-      - *save_docker_image
-      - *save
-      - *setup_git
-      - *increment_version
-      - *deploy
+      *build_image
 
 workflows:
   version: 2
