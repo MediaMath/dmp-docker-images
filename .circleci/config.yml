@@ -55,6 +55,11 @@ _stored_procedures:
         source ${WORKSPACE_PATH}/${BASHRC_FILE}
         docker tag ${IMAGE} "${AWS_ECR}/${IMAGE}:${image_version}"
         docker push "${AWS_ECR}/${IMAGE}:${image_version}"
+  add_keys: &add_keys
+    add_ssh_keys:
+        fingerprints:
+          - "ee:9c:de:91:29:48:c7:32:04:bc:54:8f:19:1d:90:ba"
+
 
 jobs:
   build_terraform:
@@ -65,9 +70,7 @@ jobs:
       <<: *global_variables
       IMAGE: terraform
     steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "ee:9c:de:91:29:48:c7:32:04:bc:54:8f:19:1d:90:ba"
+      - *add_keys
       - checkout
       - setup_remote_docker
       - *install_dependencies
@@ -94,9 +97,7 @@ jobs:
       <<: *global_variables
       IMAGE: python
     steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "ee:9c:de:91:29:48:c7:32:04:bc:54:8f:19:1d:90:ba"
+      - *add_keys
       - checkout
       - setup_remote_docker
       - *install_dependencies
