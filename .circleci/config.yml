@@ -113,3 +113,5 @@ workflows:
           context: mediamath
       - build_python:
           context: mediamath
+          requires:
+            build_terraform
