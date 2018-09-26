@@ -59,8 +59,17 @@ _stored_procedures:
     add_ssh_keys:
         fingerprints:
           - "ee:9c:de:91:29:48:c7:32:04:bc:54:8f:19:1d:90:ba"
-
-
+  restore: &restore
+    restore_cache:
+        keys:
+          - v1-{{ .Branch }}
+        paths:
+          - /caches/app.tar
+  save: &save
+    save_cache:
+        key: v1-{{ .Branch }}-{{ epoch }}
+        paths:
+          - /caches/app.tar
 jobs:
   build_terraform:
     working_directory: /app
@@ -74,18 +83,11 @@ jobs:
       - checkout
       - setup_remote_docker
       - *install_dependencies
-      - restore_cache:
-          keys:
-            - v1-{{ .Branch }}
-          paths:
-            - /caches/app.tar
+      - *restore
       - *load_docker_cache
       - *build_application_docker_image
       - *save_docker_image
-      - save_cache:
-          key: v1-{{ .Branch }}-{{ epoch }}
-          paths:
-            - /caches/app.tar
+      - *save
       - *setup_git
       - *increment_version
       - *deploy
@@ -101,18 +103,11 @@ jobs:
       - checkout
       - setup_remote_docker
       - *install_dependencies
-      - restore_cache:
-          keys:
-            - v1-{{ .Branch }}
-          paths:
-            - /caches/app.tar
+      - *restore
       - *load_docker_cache
       - *build_application_docker_image
       - *save_docker_image
-      - save_cache:
-          key: v1-{{ .Branch }}-{{ epoch }}
-          paths:
-            - /caches/app.tar
+      - *save
       - *setup_git
       - *increment_version
       - *deploy
