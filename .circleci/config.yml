@@ -83,9 +83,46 @@ jobs:
             source ${WORKSPACE_PATH}/${BASHRC_FILE}
             docker tag ${IMAGE} "${AWS_ECR}/${IMAGE}:${image_version}"
             docker push "${AWS_ECR}/${IMAGE}:${image_version}"
+  build_python:
+    working_directory: /app
+    docker:
+      - image: docker:17.05.0-ce-git
+    environment:
+      <<: *global_variables
+      IMAGE: python
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "ee:9c:de:91:29:48:c7:32:04:bc:54:8f:19:1d:90:ba"
+      - checkout
+      - setup_remote_docker
+      - *install_dependencies
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - /caches/app.tar
+      - *load_docker_cache
+      - *build_application_docker_image
+      - *save_docker_image
+      - save_cache:
+          key: v1-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /caches/app.tar
+      - *setup_git
+      - *increment_version
+      - deploy:
+          name: Push application Docker image
+          command: |
+            eval $(aws ecr get-login --no-include-email --region us-east-1)
+            source ${WORKSPACE_PATH}/${BASHRC_FILE}
+            docker tag ${IMAGE} "${AWS_ECR}/${IMAGE}:${image_version}"
+            docker push "${AWS_ECR}/${IMAGE}:${image_version}"
 workflows:
   version: 2
   docker-pipeline:
     jobs:
       - build_terraform:
+          context: mediamath
+      - build_python:
           context: mediamath
