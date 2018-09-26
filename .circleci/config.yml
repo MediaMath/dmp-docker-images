@@ -47,6 +47,15 @@ _stored_procedures:
       command: |
         mkdir -p /caches
         docker save -o /caches/app.tar ${IMAGE}
+  deploy: &deploy
+    run:
+      name: Push application Docker image
+      command: |
+        eval $(aws ecr get-login --no-include-email --region us-east-1)
+        source ${WORKSPACE_PATH}/${BASHRC_FILE}
+        docker tag ${IMAGE} "${AWS_ECR}/${IMAGE}:${image_version}"
+        docker push "${AWS_ECR}/${IMAGE}:${image_version}"
+
 jobs:
   build_terraform:
     working_directory: /app
@@ -76,13 +85,7 @@ jobs:
             - /caches/app.tar
       - *setup_git
       - *increment_version
-      - deploy:
-          name: Push application Docker image
-          command: |
-            eval $(aws ecr get-login --no-include-email --region us-east-1)
-            source ${WORKSPACE_PATH}/${BASHRC_FILE}
-            docker tag ${IMAGE} "${AWS_ECR}/${IMAGE}:${image_version}"
-            docker push "${AWS_ECR}/${IMAGE}:${image_version}"
+      - *deploy
   build_python:
     working_directory: /app
     docker:
@@ -111,13 +114,8 @@ jobs:
             - /caches/app.tar
       - *setup_git
       - *increment_version
-      - deploy:
-          name: Push application Docker image
-          command: |
-            eval $(aws ecr get-login --no-include-email --region us-east-1)
-            source ${WORKSPACE_PATH}/${BASHRC_FILE}
-            docker tag ${IMAGE} "${AWS_ECR}/${IMAGE}:${image_version}"
-            docker push "${AWS_ECR}/${IMAGE}:${image_version}"
+      - *deploy:
+
 workflows:
   version: 2
   docker-pipeline:
